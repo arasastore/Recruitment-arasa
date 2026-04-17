@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekrutmen Arasa Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F9FAFB; color: #111827; }
+        .crimson-btn { background-color: #DC143C; transition: all 0.3s ease; }
+        .crimson-btn:hover { background-color: #B21031; transform: translateY(-2px); }
+        .input-field { background-color: #F3F4F6; border: none; border-radius: 1rem; padding: 0.75rem 1rem; width: 100%; outline: none; }
+        .input-field:focus { box-shadow: 0 0 0 2px #DC143C; }
+        .card { background: white; border-radius: 2rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-lg card p-8 md:p-12">
+        
+        <section id="page1">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-extrabold tracking-tight mb-2">Arasa Store</h1>
+                <p class="text-gray-500 font-medium">Product Development & Marketplace</p>
+            </div>
+            <div class="space-y-4 text-sm leading-relaxed text-gray-600 mb-8">
+                <p><strong>Tugas Utama:</strong> Mengelola marketplace (Shopee/Tokopedia/TikTok) dan riset produk oleh-oleh kekinian.</p>
+                <p><strong>Spesifikasi:</strong> Minimal SMK/D3, paham seller center, kreatif, proaktif, dan memiliki sense visual yang baik.</p>
+                <p><strong>Benefit:</strong> Gaji Rp 2.000.000, lingkungan kerja kreatif, dan jenjang karir.</p>
+            </div>
+            <button onclick="nextPage(2)" class="w-full crimson-btn text-white font-bold py-4 rounded-full">Lanjutkan Proses Rekrutmen</button>
+        </section>
+
+        <section id="page2" class="hidden">
+            <h2 class="text-2xl font-bold mb-6">Data Diri</h2>
+            <div class="space-y-4">
+                <input type="text" id="nama" placeholder="Nama Lengkap" class="input-field">
+                <input type="text" id="wa" placeholder="Nomor WhatsApp" class="input-field">
+                <input type="text" id="ttl" placeholder="Tempat & Tanggal Lahir" class="input-field">
+                <input type="email" id="email" placeholder="Email Aktif" class="input-field">
+                <input type="text" id="alamat" placeholder="Alamat Saat Ini" class="input-field">
+                <input type="text" id="pendidikan" placeholder="Pendidikan & Jurusan" class="input-field">
+                <div class="pt-2">
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-2 ml-4">Upload CV (PDF/JPG)</label>
+                    <input type="file" id="cvFile" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                </div>
+            </div>
+            <button onclick="saveBio()" class="w-full crimson-btn text-white font-bold py-4 rounded-full mt-8">Selesai & Lanjut</button>
+        </section>
+
+        <section id="page3" class="hidden text-center">
+            <h2 class="text-2xl font-bold mb-4">Apakah Anda Siap?</h2>
+            <p class="text-gray-500 mb-8">Setelah menekan tombol di bawah, waktu pengerjaan akan mulai dihitung secara otomatis.</p>
+            <button onclick="startTest()" class="w-full crimson-btn text-white font-bold py-4 rounded-full">Mulai Test!</button>
+        </section>
+
+        <section id="pageSoal" class="hidden">
+            <div class="mb-6">
+                <span id="labelSoal" class="text-xs font-bold uppercase text-gray-400">Soal 1 dari 5</span>
+                <h2 id="judulSoal" class="text-xl font-bold mt-2"></h2>
+            </div>
+            <div id="containerGambar" class="mb-6 hidden">
+                <img src="https://placehold.co/600x400?text=Foto+Produk+Kurang+Estetik" alt="Review Visual" class="rounded-2xl w-full">
+            </div>
+            <textarea id="jawabanSoal" rows="5" placeholder="Tulis jawaban Anda di sini..." class="input-field resize-none"></textarea>
+            <button onclick="nextSoal()" id="btnNextSoal" class="w-full crimson-btn text-white font-bold py-4 rounded-full mt-8">Pertanyaan Berikutnya</button>
+        </section>
+
+        <section id="pageEnd" class="hidden text-center">
+            <h2 class="text-2xl font-bold mb-4">Terima Kasih</h2>
+            <p class="text-gray-500 mb-4">Data Anda telah berhasil terkirim. Kami akan segera menghubungi Anda jika Anda lolos ke tahap berikutnya.</p>
+            <div class="animate-pulse text-crimson-700 font-bold italic">Processing Submission...</div>
+        </section>
+
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz9lJFZN3S7Tf3q585UOC8SN3jjVAqR95DK45AgG0lKKqxhYpMZaFkmGk6HpcDgK6Sp/exec";
+        
+        let formData = {};
+        let currentSoal = 1;
+        let startTime, endTime;
+
+        const soalArray = [
+            "Lihat foto di atas. Sebutkan 3 hal yang akan kamu perbaiki agar foto ini terlihat premium untuk Arasa!",
+            "Sebutkan 1 tren makanan/kemasan yang sedang viral dan bagaimana ide kamu jika diterapkan di Arasa?",
+            "Jika produk di Shopee sepi views, sebutkan 3 langkah teknis di dashboard untuk menaikkan traffic!",
+            "Jika tim desain sedang overload padahal ada campaign besok, apa solusi proaktif yang kamu lakukan?",
+            "Buat 1 judul produk SEO-friendly dan 1 caption menarik untuk 'Keripik Tempe Oven Truffle'!"
+        ];
+
+        function nextPage(n) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('page' + n).classList.remove('hidden');
+        }
+
+        function saveBio() {
+            const fields = ['nama', 'wa', 'ttl', 'email', 'alamat', 'pendidikan'];
+            for(let f of fields) {
+                if(!document.getElementById(f).value) return alert("Mohon lengkapi semua data diri.");
+                formData[f] = document.getElementById(f).value;
+            }
+            if(!document.getElementById('cvFile').files[0]) return alert("Mohon upload CV Anda.");
+            nextPage(3);
+        }
+
+        function startTest() {
+            startTime = new Date();
+            formData.startTime = startTime.toLocaleString('id-ID');
+            showSoal();
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('pageSoal').classList.remove('hidden');
+        }
+
+        function showSoal() {
+            document.getElementById('labelSoal').innerText = `Soal ${currentSoal} dari 5`;
+            document.getElementById('judulSoal').innerText = soalArray[currentSoal-1];
+            document.getElementById('jawabanSoal').value = "";
+            document.getElementById('containerGambar').classList.toggle('hidden', currentSoal !== 1);
+            if(currentSoal === 5) document.getElementById('btnNextSoal').innerText = "Submit Lamaran";
+        }
+
+        async function nextSoal() {
+            const jawaban = document.getElementById('jawabanSoal').value;
+            if(!jawaban) return alert("Mohon isi jawaban Anda.");
+            
+            formData['soal' + currentSoal] = jawaban;
+
+            if(currentSoal < 5) {
+                currentSoal++;
+                showSoal();
+            } else {
+                submitFinal();
+            }
+        }
+
+        async function submitFinal() {
+            endTime = new Date();
+            formData.endTime = endTime.toLocaleString('id-ID');
+            formData.duration = Math.round((endTime - startTime) / 60000); // Menit
+
+            nextPage('End');
+
+            // Convert CV to Base64
+            const file = document.getElementById('cvFile').files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async function() {
+                formData.cvBase64 = reader.result;
+                formData.cvFileName = file.name;
+                formData.cvMimeType = file.type;
+
+                try {
+                    await fetch(GAS_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formData)
+                    });
+                    document.querySelector('.animate-pulse').innerText = "Selesai! Anda boleh menutup halaman ini.";
+                } catch (e) {
+                    alert("Terjadi kesalahan saat mengirim. Silakan coba lagi.");
+                }
+            };
+        }
+    </script>
+</body>
+</html>
