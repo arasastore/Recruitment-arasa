@@ -25,7 +25,7 @@
                 <p class="text-gray-500 font-medium">Product Development & Marketplace</p>
             </div>
             <div class="space-y-4 text-sm leading-relaxed text-gray-600 mb-8">
-                <p><strong>Tugas Utama:</strong> Mengelola marketplace (Shopee/Tokopedia/TikTok) dan riset produk oleh-oleh kekinian.</p>
+                <p><strong>Tugas Utama:</strong> Mengelola marketplace dan riset produk oleh-oleh kekinian.</p>
                 <p><strong>Spesifikasi:</strong> Minimal SMK/D3, paham seller center, kreatif, proaktif, dan memiliki sense visual yang baik.</p>
                 <p><strong>Benefit:</strong> Gaji Rp 2.000.000, lingkungan kerja kreatif, dan jenjang karir.</p>
             </div>
@@ -43,7 +43,7 @@
                 <input type="text" id="pendidikan" placeholder="Pendidikan & Jurusan" class="input-field">
                 <div class="pt-2">
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-2 ml-4">Upload CV (PDF/JPG)</label>
-                    <input type="file" id="cvFile" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                    <input type="file" id="cvFile" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700">
                 </div>
             </div>
             <button onclick="saveBio()" class="w-full crimson-btn text-white font-bold py-4 rounded-full mt-8">Selesai & Lanjut</button>
@@ -51,7 +51,7 @@
 
         <section id="page3" class="hidden text-center">
             <h2 class="text-2xl font-bold mb-4">Apakah Anda Siap?</h2>
-            <p class="text-gray-500 mb-8">Setelah menekan tombol di bawah, waktu pengerjaan akan mulai dihitung secara otomatis.</p>
+            <p class="text-gray-500 mb-8">Waktu pengerjaan akan mulai dihitung setelah Anda menekan tombol di bawah.</p>
             <button onclick="startTest()" class="w-full crimson-btn text-white font-bold py-4 rounded-full">Mulai Test!</button>
         </section>
 
@@ -61,7 +61,7 @@
                 <h2 id="judulSoal" class="text-xl font-bold mt-2"></h2>
             </div>
             <div id="containerGambar" class="mb-6 hidden">
-                <img id="imgSoal1" src="https://placehold.co/600x400?text=Analisis+Visual+Produk" alt="Review Visual" class="rounded-2xl w-full">
+                <img src="https://placehold.co/600x400?text=Analisis+Visual+Produk" alt="Review Visual" class="rounded-2xl w-full">
             </div>
             <textarea id="jawabanSoal" rows="5" placeholder="Tulis jawaban Anda di sini..." class="input-field resize-none"></textarea>
             <button onclick="nextSoal()" id="btnNextSoal" class="w-full crimson-btn text-white font-bold py-4 rounded-full mt-8">Pertanyaan Berikutnya</button>
@@ -69,13 +69,13 @@
 
         <section id="pageEnd" class="hidden text-center">
             <h2 class="text-2xl font-bold mb-4">Terima Kasih</h2>
-            <p class="text-gray-500 mb-4">Data Anda telah berhasil terkirim. Kami akan segera menghubungi Anda jika Anda lolos ke tahap berikutnya.</p>
-            <div id="statusMessage" class="animate-pulse text-crimson-700 font-bold italic">Sedang mengirim data...</div>
+            <p class="text-gray-500 mb-4">Data Anda telah berhasil terkirim.</p>
+            <div id="statusMessage" class="animate-pulse text-crimson-700 font-bold italic">Sedang menyimpan ke database...</div>
         </section>
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbz9lJFZN3S7Tf3q585UOC8SN3jjVAqR95DK45AgG0lKKqxhYpMZaFkmGk6HpcDgK6Sp/exec"; // Pastikan URL ini hasil Deploy Baru
+        const GAS_URL = "TEMPEL_URL_DEPLOY_BARU_DI_SINI";
         
         let formData = {};
         let currentSoal = 1;
@@ -97,10 +97,10 @@
         function saveBio() {
             const fields = ['nama', 'wa', 'ttl', 'email', 'alamat', 'pendidikan'];
             for(let f of fields) {
-                if(!document.getElementById(f).value) return alert("Mohon lengkapi semua data diri.");
+                if(!document.getElementById(f).value) return alert("Mohon lengkapi data.");
                 formData[f] = document.getElementById(f).value;
             }
-            if(!document.getElementById('cvFile').files[0]) return alert("Mohon upload CV Anda.");
+            if(!document.getElementById('cvFile').files[0]) return alert("Mohon upload CV.");
             nextPage(3);
         }
 
@@ -108,8 +108,7 @@
             startTime = new Date();
             formData.startTime = startTime.toLocaleString('id-ID');
             showSoal();
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('pageSoal').classList.remove('hidden');
+            nextPage('Soal');
         }
 
         function showSoal() {
@@ -121,9 +120,9 @@
         }
 
         function nextSoal() {
-            const jawaban = document.getElementById('jawabanSoal').value;
-            if(!jawaban) return alert("Mohon isi jawaban Anda.");
-            formData['soal' + currentSoal] = jawaban;
+            const jwb = document.getElementById('jawabanSoal').value;
+            if(!jwb) return alert("Isi jawaban.");
+            formData['soal' + currentSoal] = jwb;
             if(currentSoal < 5) { currentSoal++; showSoal(); } 
             else { submitFinal(); }
         }
@@ -143,17 +142,16 @@
                 formData.cvMimeType = file.type;
 
                 try {
-                    // Mengirim sebagai text/plain untuk menghindari limitasi CORS pada JSON
                     await fetch(GAS_URL, {
                         method: "POST",
                         mode: "no-cors",
                         headers: { "Content-Type": "text/plain" },
                         body: JSON.stringify(formData)
                     });
-                    document.getElementById('statusMessage').innerText = "Selesai! Data sudah kami terima.";
+                    document.getElementById('statusMessage').innerText = "Selesai! Data sudah mendarat di database.";
                     document.getElementById('statusMessage').classList.remove('animate-pulse');
                 } catch (e) {
-                    alert("Gagal mengirim data. Silakan coba lagi.");
+                    alert("Error kirim data.");
                 }
             };
         }
