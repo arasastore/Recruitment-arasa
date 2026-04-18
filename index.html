@@ -19,7 +19,6 @@
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <div id="app" class="w-full max-w-lg card p-8 md:p-12">
-        
         <section id="page1">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-extrabold tracking-tight mb-2">Arasa Store</h1>
@@ -62,7 +61,7 @@
                 <h2 id="judulSoal" class="text-xl font-bold mt-2"></h2>
             </div>
             <div id="containerGambar" class="mb-6 hidden">
-                <img src="https://placehold.co/600x400?text=Foto+Produk+Kurang+Estetik" alt="Review Visual" class="rounded-2xl w-full">
+                <img id="imgSoal1" src="https://placehold.co/600x400?text=Analisis+Visual+Produk" alt="Review Visual" class="rounded-2xl w-full">
             </div>
             <textarea id="jawabanSoal" rows="5" placeholder="Tulis jawaban Anda di sini..." class="input-field resize-none"></textarea>
             <button onclick="nextSoal()" id="btnNextSoal" class="w-full crimson-btn text-white font-bold py-4 rounded-full mt-8">Pertanyaan Berikutnya</button>
@@ -71,19 +70,16 @@
         <section id="pageEnd" class="hidden text-center">
             <h2 class="text-2xl font-bold mb-4">Terima Kasih</h2>
             <p class="text-gray-500 mb-4">Data Anda telah berhasil terkirim. Kami akan segera menghubungi Anda jika Anda lolos ke tahap berikutnya.</p>
-            <div class="animate-pulse text-crimson-700 font-bold italic">Processing Submission...</div>
+            <div id="statusMessage" class="animate-pulse text-crimson-700 font-bold italic">Sedang mengirim data...</div>
         </section>
-
     </div>
 
     <script>
-        // URL API GAS Paduka
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbz9lJFZN3S7Tf3q585UOC8SN3jjVAqR95DK45AgG0lKKqxhYpMZaFkmGk6HpcDgK6Sp/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz9lJFZN3S7Tf3q585UOC8SN3jjVAqR95DK45AgG0lKKqxhYpMZaFkmGk6HpcDgK6Sp/exec"; // Pastikan URL ini hasil Deploy Baru
         
         let formData = {};
         let currentSoal = 1;
         let startTime, endTime;
-
         const soalArray = [
             "Lihat foto di atas. Sebutkan 3 hal yang akan kamu perbaiki agar foto ini terlihat premium untuk Arasa!",
             "Sebutkan 1 tren makanan/kemasan yang sedang viral dan bagaimana ide kamu jika diterapkan di Arasa?",
@@ -94,7 +90,8 @@
 
         function nextPage(n) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('page' + n).classList.remove('hidden');
+            if(n === 'End') document.getElementById('pageEnd').classList.remove('hidden');
+            else document.getElementById('page' + n).classList.remove('hidden');
         }
 
         function saveBio() {
@@ -123,25 +120,18 @@
             if(currentSoal === 5) document.getElementById('btnNextSoal').innerText = "Submit Lamaran";
         }
 
-        async function nextSoal() {
+        function nextSoal() {
             const jawaban = document.getElementById('jawabanSoal').value;
             if(!jawaban) return alert("Mohon isi jawaban Anda.");
-            
             formData['soal' + currentSoal] = jawaban;
-
-            if(currentSoal < 5) {
-                currentSoal++;
-                showSoal();
-            } else {
-                submitFinal();
-            }
+            if(currentSoal < 5) { currentSoal++; showSoal(); } 
+            else { submitFinal(); }
         }
 
         async function submitFinal() {
             endTime = new Date();
             formData.endTime = endTime.toLocaleString('id-ID');
-            formData.duration = Math.round((endTime - startTime) / 60000); // Menit
-
+            formData.duration = Math.round((endTime - startTime) / 60000);
             nextPage('End');
 
             const file = document.getElementById('cvFile').files[0];
@@ -152,23 +142,18 @@
                 formData.cvFileName = file.name;
                 formData.cvMimeType = file.type;
 
-                // Konversi data ke format URLSearchParams agar kebal CORS
-                const params = new URLSearchParams();
-                for (const key in formData) {
-                    params.append(key, formData[key]);
-                }
-
                 try {
+                    // Mengirim sebagai text/plain untuk menghindari limitasi CORS pada JSON
                     await fetch(GAS_URL, {
                         method: "POST",
                         mode: "no-cors",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        body: params.toString()
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify(formData)
                     });
-                    document.querySelector('.animate-pulse').innerText = "Selesai! Anda boleh menutup halaman ini.";
+                    document.getElementById('statusMessage').innerText = "Selesai! Data sudah kami terima.";
+                    document.getElementById('statusMessage').classList.remove('animate-pulse');
                 } catch (e) {
-                    console.error("Submit Error:", e);
-                    alert("Terjadi kesalahan teknis saat mengirim data.");
+                    alert("Gagal mengirim data. Silakan coba lagi.");
                 }
             };
         }
